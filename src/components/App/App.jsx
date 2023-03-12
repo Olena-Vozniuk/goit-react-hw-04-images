@@ -1,6 +1,6 @@
 import { GlobalStyle } from 'GlobalStyle';
-import { Component } from 'react';
-import { Toaster } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import { AppStyled } from './App.styled';
 import { ImageGallery } from '../ImageGallery/ImageGallery';
 import { Searchbar } from '../Searchbar/Searchbar';
@@ -9,82 +9,64 @@ import { getImages } from "components/Services/api";
 import { Button } from "components/Button/Button";
 
 
-export class App extends Component{
-  state = {
-    value: '',
-    page: 1,
-    images: [],
-    loading: false,
-    error: '',
-    showModal: false,
-    showLoadButton: false,
-  }
-  
-  componentDidUpdate(_, prevState) {
-    const { value, page } = this.state;
+export const App = () => {
 
-    if (value !== prevState.value || page !== prevState.page) {
-          this.setState((prevState) => (
-            {
-              page: (value === prevState.value) ? (prevState.page) : 1,
-              loading: true,
-              showLoadButton: true,
-            }))
-      
-            getImages(value, page)
-                .then(response => response.json())
-                .then(images => {
-                    if (images.totalHits === 0 ) {
-                      return Promise.reject(
-                        new Error('something is wrong!'));
-                    }
-                  
-                  this.setState({
-                    images: page === 1 ? images.hits : [...this.state.images, ...images.hits],
+  const [value, setValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showLoadButton, setShowLoadButton] = useState(false);
+  const [SelectedImage, setSelectedImage] = useState(null);
 
-                  })
-                  
-                }).catch(error => {
-                    this.setState({ error, showLoadButton: false, images: [], })
-                }).finally(() => {
-                    this.setState({
-                        loading: false,
-                    })
-                })
-            this.setState({error: ''})
+
+  useEffect(() => {
+    if (value === '') {
+      return
+    };
+    setLoading(true);
+    getImages(value.value, page)
+      .then(response => response.json())
+      .then(images => {
+        if (images.totalHits === 0) {
+          return toast.error(`Invalid request "${value.value}"`);
+        }else if (images.totalHits !== 0 && page === 1) {
+          setImages(images.hits);
+          toast.success(`There are ${images.totalHits} for your request`);
+        } else {
+          setImages(prevstate => [...prevstate, ...images.hits]);
         }
-        
-}
-  
-  submitForm = (value) => {
-    this.setState({ value, page:1 })
-  }
-  
+        ; 
+       images.totalHits === images.total ? setShowLoadButton(false) : setShowLoadButton(true)   
+      }
+      ).catch(error => {
+        setError(error);
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [value, page]);
 
-  handleLoad = () => {
-        this.setState((prev) => ({ page: prev.page + 1 }))
-  }
-  
-  toggleModal = () =>
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }))
+  const submitForm = (value) => {
+    setValue({ value });
+    setPage(1);
+    setImages([]);
+  };
 
-  
-  render() {
-    const { error, loading, images, value } = this.state;
-    
+  const handleLoad = () => {
+    setPage(page => page + 1)
+  };
+
     return (
       <AppStyled>
-        <Toaster position='top-right'
-          toastOptions={{
-            duration: 1000,}} />
-        <Searchbar  onSubmit={this.submitForm}  />
+        <Toaster position='top-right' toastOptions={{duration: 2000,}} />
+        <Searchbar  onSubmit={submitForm}  />
         <ImageGallery images={images} />
         {error && <p align="center">Sorry, no results for "{value}"</p>}
         {loading && <Loader />}
-        {!error && images[0] && <Button onClick={this.handleLoad} />}
+        {!error && showLoadButton && <Button onClick={handleLoad} />}
       <GlobalStyle />
     </AppStyled>
-  );}
-};
+  );
+}
