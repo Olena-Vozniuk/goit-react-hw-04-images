@@ -17,8 +17,6 @@ export const App = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showLoadButton, setShowLoadButton] = useState(false);
-  const [SelectedImage, setSelectedImage] = useState(null);
-
 
   useEffect(() => {
     if (value === '') {
