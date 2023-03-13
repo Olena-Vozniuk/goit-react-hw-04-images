@@ -27,6 +27,7 @@ export const App = () => {
       .then(response => response.json())
       .then(images => {
         if (images.totalHits === 0) {
+          setShowLoadButton(false);
           return toast.error(`Invalid request "${value}"`);
         }else if (images.totalHits !== 0 && page === 1) {
           setImages(images.hits);
@@ -35,7 +36,7 @@ export const App = () => {
           setImages(prevstate => [...prevstate, ...images.hits]);
         }
         ; 
-        setShowLoadButton(true);
+        images.totalHits/12 <= page ? setShowLoadButton(false) : setShowLoadButton(true);
       }
       ).catch(error => {
         setError(error);
