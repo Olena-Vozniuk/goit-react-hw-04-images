@@ -23,11 +23,11 @@ export const App = () => {
       return
     };
     setLoading(true);
-    getImages(value.value, page)
+    getImages(value, page)
       .then(response => response.json())
       .then(images => {
         if (images.totalHits === 0) {
-          return toast.error(`Invalid request "${value.value}"`);
+          return toast.error(`Invalid request "${value}"`);
         }else if (images.totalHits !== 0 && page === 1) {
           setImages(images.hits);
           toast.success(`There are ${images.totalHits} for your request`);
@@ -35,7 +35,7 @@ export const App = () => {
           setImages(prevstate => [...prevstate, ...images.hits]);
         }
         ; 
-       images.totalHits === images.total ? setShowLoadButton(false) : setShowLoadButton(true)   
+        setShowLoadButton(true);
       }
       ).catch(error => {
         setError(error);
@@ -47,7 +47,7 @@ export const App = () => {
   }, [value, page]);
 
   const submitForm = (value) => {
-    setValue({ value });
+    setValue(value);
     setPage(1);
     setImages([]);
   };
