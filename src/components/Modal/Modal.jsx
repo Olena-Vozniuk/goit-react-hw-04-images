@@ -6,7 +6,7 @@ import { Overlay, ModalBox } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export const Modal = (onClose, children) => {
+export const Modal = ({onClose, children}) => {
 
   useEffect(() => {
     const handleKeyDown = event => {
